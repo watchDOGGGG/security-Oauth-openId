@@ -1,77 +1,60 @@
 import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import User from "../models/user";
-import { BasicStrategy } from "passport-http";
-import { Strategy as ClientPasswordStrategy } from "passport-oauth2-client-password";
-import Client from "../models/clients";
+import {
+  Strategy as GoogleStrategy,
+  Profile,
+  VerifyCallback,
+} from "passport-google-oauth20";
+import { Request } from "express";
+import User from "../models/user"; // Adjust the path as needed
+import dotenv from "dotenv";
 
-// Local Strategy for user login
+dotenv.config();
+
 passport.use(
-  new LocalStrategy(
-    { usernameField: "email" },
-    async (email, password, done) => {
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      callbackURL: "http://localhost:5000/auth/google/callback",
+      passReqToCallback: false, // ❌ REMOVE if not using req
+    },
+    async (
+      accessToken: string,
+      refreshToken: string,
+      profile: Profile,
+      done: VerifyCallback,
+    ) => {
       try {
-        const user = await User.findOne({ email });
-        if (!user) return done(null, false, { message: "User not found" });
+        // let user = await User.findOne({ googleId: profile.id });
 
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch)
-          return done(null, false, { message: "Invalid credentials" });
+        // if (!user) {
+        //   user = new User({
+        //     googleId: profile.id,
+        //     displayName: profile.displayName,
+        //     email: profile.emails?.[0]?.value || "",
+        //     profilePicture: profile.photos?.[0]?.value || "",
+        //   });
+        //   await user.save();
+        // }
 
-        return done(null, user);
-      } catch (err) {
-        return done(err);
+        return done(null, profile);
+      } catch (error) {
+        return done(error, false);
       }
     },
   ),
 );
 
-// Basic Strategy for client authentication
-passport.use(
-  new BasicStrategy(async (clientId, clientSecret, done): Promise<any> => {
-    try {
-      const client = await Client.findOne({ clientId });
-      if (!client) return done(null, false);
-
-      if (client.clientSecret !== clientSecret) return done(null, false);
-
-      return done(null, client);
-    } catch (err) {
-      return done(err);
-    }
-  }),
-);
-
-// Client Password Strategy for client authentication
-passport.use(
-  new ClientPasswordStrategy(
-    async (clientId, clientSecret, done): Promise<any> => {
-      try {
-        const client = await Client.findOne({ clientId });
-        if (!client) return done(null, false);
-
-        if (client.clientSecret !== clientSecret) return done(null, false);
-
-        return done(null, client);
-      } catch (err) {
-        return done(err);
-      }
-    },
-  ),
-);
-
-// User serialization for sessions
+// Serialize & Deserialize User (Required for session support)
 passport.serializeUser((user: any, done) => {
-  done(null, user._id);
+  done(null, user);
 });
 
-// User deserialization from sessions
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (user: any, done) => {
   try {
-    const user = await User.findById(id);
     done(null, user);
-  } catch (err) {
-    done(err);
+  } catch (error) {
+    done(error, null);
   }
 });
 

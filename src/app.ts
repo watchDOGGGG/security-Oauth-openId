@@ -1,12 +1,12 @@
 import express, { Application } from "express";
 import { authRoute } from "./routes/auth";
-import { clientRoute } from "./routes/client";
-import { oauthRoutes } from "./routes/oauth";
 import session from "express-session";
 import passport from "./config/passport";
 import MongoStore from "connect-mongo";
 import flash from "connect-flash";
 import path from "path";
+import { clientRoute } from "./routes/client";
+
 export const app: Application = express();
 
 app.set("view engine", "ejs");
@@ -37,4 +37,3 @@ app.use(passport.session());
 
 app.use("/auth", authRoute);
 app.use("/client", clientRoute);
-app.use("/oauth", oauthRoutes);

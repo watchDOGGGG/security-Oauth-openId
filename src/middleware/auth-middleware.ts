@@ -8,7 +8,7 @@ export const isAuthenticated = (
   res: Response,
   next: NextFunction,
 ) => {
-  if (req.isAuthenticated()) {
+  if (req.user) {
     return next();
   }
 
