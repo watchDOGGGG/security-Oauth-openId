@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authorize Application - OAuth Server</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="bg-primary-600 p-6">
+        <h1 class="text-white text-2xl font-bold text-center">Authorize Application</h1>
+        <p class="text-primary-100 text-center mt-2"><%= client.name %> would like to access your account</p>
+      </div>
+      
+      <div class="p-6">
+        <div class="mb-6">
+          <div class="flex items-center mb-4">
+            <% if (client.logoUrl) { %>
+              <img src="<%= client.logoUrl %>" alt="<%= client.name %> logo" class="h-12 w-12 rounded-full mr-4">
+            <% } else { %>
+              <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center mr-4">
+                <span class="text-primary-600 text-xl font-bold"><%= client.name.charAt(0) %></span>
+              </div>
+            <% } %>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-800"><%= client.name %></h2>
+              <p class="text-sm text-gray-600"><%= client.description || 'This application would like to access your data' %></p>
+            </div>
+          </div>
+          
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <h3 class="font-medium text-gray-700 mb-2">This application will be able to:</h3>
+            <ul class="space-y-2">
+              <li class="flex items-start">
+                <svg class="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Read your basic profile information</span>
+              </li>
+              <% if (client.scope && client.scope.includes('email')) { %>
+              <li class="flex items-start">
+                <svg class="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Access your email address</span>
+              </li>
+              <% } %>
+              <% if (client.scope && client.scope.includes('data')) { %>
+              <li class="flex items-start">
+                <svg class="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Access your data and resources</span>
+              </li>
+              <% } %>
+            </ul>
+          </div>
+          
+          <p class="text-sm text-gray-600 mb-4">
+            By authorizing this application, you're allowing it to access your information according to their privacy policy and terms of service.
+          </p>
+        </div>
+        
+        <form action="/oauth/authorize/decision" method="POST" class="space-y-4">
+          <input type="hidden" name="transaction_id" value="<%= transactionID %>">
+          
+          <div class="flex flex-col space-y-3">
+            <button 
+              type="submit" 
+              name="allow" 
+              value="true" 
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
+            >
+              Authorize Application
+            </button>
+            
+            <button 
+              type="submit" 
+              name="cancel" 
+              value="true" 
+              class="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded border border-gray-300 focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="mt-4 text-center text-sm text-gray-600">
+      <p>You're logged in as <strong><%= user.email || user.username %></strong>. <a href="/auth/logout" class="text-primary-600 hover:text-primary-800">Not you?</a></p>
+    </div>
+  </div>
+</body>
+</html>
+
